@@ -1,13 +1,17 @@
 #include "RRT.h"
 
 Path RRT::run() {
-  nodes.emplace_back(make_shared<LLNode>(start_point));
+  start_node = make_shared<LLNode>(start_point);
+  nodes.emplace_back(start_node);
   int iteration = env.iterations[agent_id];
   while (iteration--) {
     Point random_point = generateRandomPoint();
     shared_ptr<LLNode> nearest_node = getNearestNode(random_point);
-    shared_ptr<LLNode> new_node = steer(nearest_node, random_point);
+    shared_ptr<LLNode> new_node = steer(nearest_node->point, random_point);
     if (new_node) {
+      new_node->parent = nearest_node;
+      new_node->adjacent_nodes.emplace_back(nearest_node);
+      nearest_node->adjacent_nodes.emplace_back(new_node);
       nodes.emplace_back(new_node);
       if (calculateDistance(new_node->point, goal_point) < env.epsilon) {
         goal_node = new_node;
@@ -43,20 +47,18 @@ shared_ptr<LLNode> RRT::getNearestNode(const Point& point) const {
   return nearest_node;
 }
 
-shared_ptr<LLNode> RRT::steer(const shared_ptr<LLNode>& from_node, const Point& random_point) const {
+shared_ptr<LLNode> RRT::steer(const Point& from_point, const Point& random_point) const {
   const double expand_distance =
-      min(env.max_expand_distances[agent_id], calculateDistance(from_node->point, random_point));
+      min(env.max_expand_distances[agent_id], calculateDistance(from_point, random_point));
   const double theta =
-      atan2(get<1>(random_point) - get<1>(from_node->point), get<0>(random_point) - get<0>(from_node->point));
-  Point to_point = make_tuple(get<0>(from_node->point) + cos(theta) * expand_distance,
-                              get<1>(from_node->point) + sin(theta) * expand_distance);
+      atan2(get<1>(random_point) - get<1>(from_point), get<0>(random_point) - get<0>(from_point));
+  Point to_point = make_tuple(get<0>(from_point) + cos(theta) * expand_distance,
+                              get<1>(from_point) + sin(theta) * expand_distance);
 
-  if (obstacleConstrained(from_node->point, to_point, env.radii[agent_id])) {
+  if (obstacleConstrained(from_point, to_point, env.radii[agent_id])) {
     return nullptr;
   }
   shared_ptr<LLNode> new_node = make_shared<LLNode>(to_point);
-  new_node->parent = from_node;
-  from_node->children.emplace_back(new_node);
   return new_node;
 }
 
@@ -111,6 +113,4 @@ void RRT::interpolatePoint(int agent_id, const Point& from_point, const Point& t
   }
 
   assert(!interpolated_points.empty());
-  assert(calculateDistance(interpolated_points.back(), from_point) < env.max_expand_distances[agent_id] + env.epsilon);
-  assert(calculateDistance(interpolated_points.front(), to_point) < env.max_expand_distances[agent_id] + env.epsilon);
 }

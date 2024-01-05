@@ -15,6 +15,7 @@ class RRT {
   std::uniform_real_distribution<> dis_height;
   std::uniform_real_distribution<> dis_100;
   vector<shared_ptr<LLNode>> nodes;
+  shared_ptr<LLNode> start_node;
   shared_ptr<LLNode> goal_node;
   Point start_point;
   Point goal_point;
@@ -35,7 +36,7 @@ class RRT {
   Path run();
   Point generateRandomPoint();
   shared_ptr<LLNode> getNearestNode(const Point& point) const;
-  shared_ptr<LLNode> steer(const shared_ptr<LLNode>& from_node, const Point& random_point) const;
+  shared_ptr<LLNode> steer(const Point& from_node, const Point& random_point) const;
   Path updatePath(const shared_ptr<LLNode>& goal_node) const;
   void interpolatePoint(int agent_id, const Point& from_point, const Point& to_point,
                         vector<Point>& interpolated_points) const;

@@ -1,3 +1,5 @@
+#include <SSSP.h>
+
 #include "RRT.h"
 #include "SharedEnv.h"
 
@@ -34,10 +36,8 @@ int main() {
   auto start = std::chrono::high_resolution_clock::now();
 
   // SI-CBS
-  for (int agent_id = 0; agent_id < num_of_agents; ++agent_id) {
-    RRT rrt(agent_id, env);
-    soluiton.emplace_back(rrt.run());
-  }
+  SSSP sssp(env);
+  soluiton = sssp.run();
 
   auto stop = std::chrono::high_resolution_clock::now();
   chrono::duration<double, std::ratio<1>> duration = stop - start;
