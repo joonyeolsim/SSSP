@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(SI_CBS)
+project(SSSP)
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -13,7 +13,6 @@ include_directories(${Boost_INCLUDE_DIRS})
 
 file(GLOB SOURCES "src/*.cpp")
 
-add_executable(SI-CBS ${SOURCES}
-        include/RRT.h)
-target_link_libraries(SI-CBS ${Boost_LIBRARIES})
+add_executable(SSSP ${SOURCES})
+target_link_libraries(SSSP ${Boost_LIBRARIES})
 #target_link_libraries(SI-CBS yaml-cpp)

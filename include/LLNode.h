@@ -14,7 +14,7 @@ class LLNode {
   vector<shared_ptr<LLNode>> children;
   double cost = 0.0;
 
-  explicit LLNode(Point point) : point(std::move(point)){}
+  explicit LLNode(Point point) : point(std::move(point)) {}
 };
 
 #endif  // LLNODE_H
