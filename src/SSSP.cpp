@@ -19,6 +19,7 @@ Solution SSSP::run() {
       cost += roadmap_constructors[i].start_node->cost;
     }
     vector<Point> configurations;
+    configurations.reserve(env.num_of_robots);
     for (int i = 0; i < env.num_of_robots; ++i) {
       configurations.emplace_back(roadmap_constructors[i].start_node->point);
     }
