@@ -18,7 +18,9 @@ class HLNode {
       : nodes(std::move(nodes)), next(next), cost(cost) {}
 
   // operator for priority queue
-  bool operator<(const HLNode& other) const { return cost > other.cost; }
+  bool operator<(const HLNode& other) const {
+    return cost < other.cost;
+  }
 
   // operator for unordered_set
   bool operator==(const HLNode& other) const {

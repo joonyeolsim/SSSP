@@ -17,7 +17,7 @@ class LLNode {
   explicit LLNode(Point point) : point(std::move(point)) {}
 
   // operator for priority queue
-        bool operator<(const LLNode& other) const { return cost > other.cost; }
+        bool operator<(const LLNode& other) const { return cost < other.cost; }
 
   // operator for unordered_set
         bool operator==(const LLNode& other) const { return point == other.point; }

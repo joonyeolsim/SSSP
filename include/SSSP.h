@@ -1,6 +1,7 @@
 #include "RRT.h"
 #include "SharedEnv.h"
 #include "common.h"
+#include "HLNode.h"
 
 class SSSP {
 public:
@@ -27,4 +28,5 @@ public:
   bool agentConstrained(int agent_id, const Point& from_point, const Point& to_point,
                         const vector<shared_ptr<LLNode>>& nodes, double radius) const;
   void dijkstra(Roadmap roadmap, shared_ptr<LLNode> source_node);
+  Solution updatePath(const shared_ptr<HLNode>& goal_node) const;
 };

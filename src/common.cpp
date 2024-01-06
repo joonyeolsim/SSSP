@@ -7,8 +7,9 @@ void savePath(const Path& path, const string& filename) {
     return;
   }
 
-  for (const auto& point : path) {
-    file << "(" << get<0>(point) << "," << get<1>(point) << ")->";
+  for (const auto& point_time : path) {
+    auto [point, time] = point_time;
+    file << "(" << get<0>(point) << "," << get<1>(point) << "," << time << ") ";
   }
   file << endl;
   file.close();
@@ -23,8 +24,9 @@ void saveSolution(const Solution& solution, const string& filename) {
 
   for (size_t i = 0; i < solution.size(); ++i) {
     file << "Agent " << i << ":";
-    for (const auto& point : solution[i]) {
-      file << "(" << get<0>(point) << "," << get<1>(point) << ")->";
+    for (const auto& point_time : solution[i]) {
+      auto [point, time] = point_time;
+      file << "(" << get<0>(point) << "," << get<1>(point) << "," << time << ") ";
     }
     file << endl;
   }

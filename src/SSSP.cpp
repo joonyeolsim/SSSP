@@ -1,14 +1,16 @@
 #include "SSSP.h"
 
-#include <unordered_set>
-
-#include "HLNode.h"
+struct HLNodeComparator {
+  bool operator()(const shared_ptr<HLNode>& lhs, const shared_ptr<HLNode>& rhs) const {
+    return lhs->cost > rhs->cost;
+  }
+};
 
 Solution SSSP::run() {
   Solution solution;
   initRoadmaps();
   while (true) {
-    auto open = priority_queue<shared_ptr<HLNode>>();
+    auto open = priority_queue<shared_ptr<HLNode>, vector<shared_ptr<HLNode>>, HLNodeComparator>();
     auto explored = unordered_set<shared_ptr<HLNode>>();
     // update cost of all nodes
     for (int i = 0; i < env.num_of_robots; ++i) {
@@ -33,17 +35,21 @@ Solution SSSP::run() {
 
       // check goal
       vector<Point> configurations;
-      for (const auto& node : curr_hl_node->nodes) {
-        configurations.emplace_back(node->point);
+      for (int i = 0; i < env.num_of_robots; ++i) {
+        configurations.emplace_back(curr_hl_node->nodes[i]->point);
+        cout << "Agent " << i << ": (" << get<0>(curr_hl_node->nodes[i]->point) << ", "
+             << get<1>(curr_hl_node->nodes[i]->point) << ")" << endl;
       }
       if (configurations == env.goal_points) {
         cout << "SSSP: Found solution" << endl;
+        solution = updatePath(curr_hl_node);
         return solution;
       }
 
       // vertex expansion
       const auto agent_id = curr_hl_node->next;
       const auto from_node = curr_hl_node->nodes[agent_id];
+      cout << "Vertex expansion: " << agent_id << endl;
 
       for (int i = 0; i < num_of_sampling; i++) {
         auto new_point = roadmap_constructors[agent_id].generateRandomPoint();
@@ -63,6 +69,8 @@ Solution SSSP::run() {
         if (min_distance > threshold) {
           // add q_new to roadmap
           roadmaps[agent_id].emplace_back(new_node);
+          cout << "Add node (" << get<0>(new_node->point) << ", " << get<1>(new_node->point) << ") to roadmap "
+               << agent_id << endl;
           for (const auto& node : roadmaps[agent_id]) {
             if (!roadmap_constructors[agent_id].obstacleConstrained(node->point, new_node->point,
                                                                     env.radii[agent_id])) {
@@ -77,6 +85,7 @@ Solution SSSP::run() {
       dijkstra(roadmaps[agent_id], roadmap_constructors[agent_id].goal_node);
 
       // node expansion
+      cout << "Node expansion: " << agent_id << endl;
       const auto next_agent_id = (agent_id + 1) % env.num_of_robots;
       for (const auto& adjacent_node : from_node->adjacent_nodes) {
         auto new_nodes = curr_hl_node->nodes;
@@ -127,10 +136,16 @@ bool SSSP::agentConstrained(int agent_id, const Point& from_point, const Point& 
   return false;
 }
 
-void SSSP::dijkstra(Roadmap roadmap, const shared_ptr<LLNode> source_node) {
-  using NodeHandle = boost::heap::fibonacci_heap<shared_ptr<LLNode>>::handle_type;
+struct LLNodeComparator {
+  bool operator()(const shared_ptr<LLNode>& lhs, const shared_ptr<LLNode>& rhs) const {
+    return lhs->cost > rhs->cost;
+  }
+};
 
-  boost::heap::fibonacci_heap<shared_ptr<LLNode>> open;
+void SSSP::dijkstra(Roadmap roadmap, const shared_ptr<LLNode> source_node) {
+  using NodeHandle = boost::heap::fibonacci_heap<shared_ptr<LLNode>, boost::heap::compare<LLNodeComparator>>::handle_type;
+
+  boost::heap::fibonacci_heap<shared_ptr<LLNode>, boost::heap::compare<LLNodeComparator>> open;
   std::unordered_map<shared_ptr<LLNode>, NodeHandle> handles;
   std::unordered_set<shared_ptr<LLNode>> explored;
 
@@ -162,4 +177,19 @@ void SSSP::dijkstra(Roadmap roadmap, const shared_ptr<LLNode> source_node) {
       }
     }
   }
+}
+
+Solution SSSP::updatePath(const shared_ptr<HLNode>& goal_node) const {
+  Solution solution;
+  solution.resize(env.num_of_robots);
+  shared_ptr<HLNode> node = goal_node;
+  double timestep = 0.0;
+  while (node) {
+    for (int i = 0; i < env.num_of_robots; ++i) {
+      solution[i].emplace_back(node->nodes[i]->point, timestep);
+    }
+    node = node->parent.lock();
+    timestep += 1.0;
+  }
+  return solution;
 }

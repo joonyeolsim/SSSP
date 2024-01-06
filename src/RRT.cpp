@@ -77,7 +77,7 @@ Path RRT::updatePath(const shared_ptr<LLNode>& goal_node) const {
   Path path = {};
   shared_ptr<LLNode> node = goal_node;
   while (node) {
-    path.emplace_back(node->point);
+    path.emplace_back(node->point, 0.0);
     node = node->parent.lock();
   }
   reverse(path.begin(), path.end());
