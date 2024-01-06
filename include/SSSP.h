@@ -4,7 +4,7 @@
 
 class SSSP {
 public:
-  int num_of_sampling = 100;
+  int num_of_sampling = 6;
   double random_sampling_rate = 1;
   double threshold = 1;
   double decay_rate = 0.99;
@@ -25,6 +25,6 @@ public:
   Solution run();
   void initRoadmaps();
   bool agentConstrained(int agent_id, const Point& from_point, const Point& to_point,
-                        const vector<Point>& configurations, double radius) const;
+                        const vector<shared_ptr<LLNode>>& nodes, double radius) const;
   void dijkstra(Roadmap roadmap, shared_ptr<LLNode> source_node);
 };

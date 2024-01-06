@@ -18,34 +18,39 @@ Solution SSSP::run() {
     for (int i = 0; i < env.num_of_robots; ++i) {
       cost += roadmap_constructors[i].start_node->cost;
     }
-    vector<Point> configurations;
-    configurations.reserve(env.num_of_robots);
+    vector<shared_ptr<LLNode>> nodes;
+    nodes.reserve(env.num_of_robots);
     for (int i = 0; i < env.num_of_robots; ++i) {
-      configurations.emplace_back(roadmap_constructors[i].start_node->point);
+      nodes.emplace_back(roadmap_constructors[i].start_node);
     }
-    shared_ptr<HLNode> start_hl_node = make_shared<HLNode>(configurations, 0, cost);
+    shared_ptr<HLNode> start_hl_node = make_shared<HLNode>(nodes, 0, cost);
     open.push(start_hl_node);
     explored.insert(start_hl_node);
 
     while (!open.empty()) {
       const auto curr_hl_node = open.top();
       open.pop();
-      if (curr_hl_node->configurations == env.goal_points) {
+
+      // check goal
+      vector<Point> configurations;
+      for (const auto& node : curr_hl_node->nodes) {
+        configurations.emplace_back(node->point);
+      }
+      if (configurations == env.goal_points) {
         cout << "SSSP: Found solution" << endl;
         return solution;
       }
 
       // vertex expansion
       const auto agent_id = curr_hl_node->next;
-      const auto from_point = curr_hl_node->configurations[agent_id];
-      const auto from_node = roadmap_constructors[agent_id].getNearestNode(from_point);
+      const auto from_node = curr_hl_node->nodes[agent_id];
 
       for (int i = 0; i < num_of_sampling; i++) {
         auto new_point = roadmap_constructors[agent_id].generateRandomPoint();
         shared_ptr<LLNode> new_node = make_shared<LLNode>(new_point);
         if (dis_100(gen) > random_sampling_rate) {
           // steering
-          new_node = roadmap_constructors[agent_id].steer(from_point, new_point);
+          new_node = roadmap_constructors[agent_id].steer(from_node->point, new_point);
         }
         // find minimum distance from q_new to nodes in roadmap
         auto min_distance = numeric_limits<double>::max();
@@ -74,17 +79,17 @@ Solution SSSP::run() {
       // node expansion
       const auto next_agent_id = (agent_id + 1) % env.num_of_robots;
       for (const auto& adjacent_node : from_node->adjacent_nodes) {
-        auto new_configurations = curr_hl_node->configurations;
-        new_configurations[agent_id] = adjacent_node->point;
+        auto new_nodes = curr_hl_node->nodes;
+        new_nodes[agent_id] = adjacent_node;
 
         double new_cost = 0;
         for (int i = 0; i < env.num_of_robots; ++i) {
           new_cost += adjacent_node->cost;
         }
 
-        auto new_hl_node = make_shared<HLNode>(new_configurations, next_agent_id, new_cost);
+        auto new_hl_node = make_shared<HLNode>(new_nodes, next_agent_id, new_cost);
         if (explored.find(new_hl_node) == explored.end()) {
-          if (agentConstrained(agent_id, from_point, adjacent_node->point, curr_hl_node->configurations,
+          if (agentConstrained(agent_id, from_node->point, adjacent_node->point, curr_hl_node->nodes,
                                env.radii[agent_id])) {
             continue;
           }
@@ -106,7 +111,7 @@ void SSSP::initRoadmaps() {
 }
 
 bool SSSP::agentConstrained(int agent_id, const Point& from_point, const Point& to_point,
-                            const vector<Point>& configurations, double radius) const {
+                            const vector<shared_ptr<LLNode>>& nodes, double radius) const {
   vector<Point> interpolated_points;
   roadmap_constructors[agent_id].interpolatePoint(agent_id, from_point, to_point, interpolated_points);
   for (const auto& interpolated_point : interpolated_points) {
@@ -114,7 +119,7 @@ bool SSSP::agentConstrained(int agent_id, const Point& from_point, const Point& 
       if (other_agent_id == agent_id) {
         continue;
       }
-      if (calculateDistance(interpolated_point, configurations[other_agent_id]) < radius + env.radii[other_agent_id]) {
+      if (calculateDistance(interpolated_point, nodes[other_agent_id]->point) < radius + env.radii[other_agent_id]) {
         return true;
       }
     }
@@ -129,6 +134,10 @@ void SSSP::dijkstra(Roadmap roadmap, const shared_ptr<LLNode> source_node) {
   std::unordered_map<shared_ptr<LLNode>, NodeHandle> handles;
   std::unordered_set<shared_ptr<LLNode>> explored;
 
+  for (const auto& node : roadmap) {
+    node->cost = numeric_limits<double>::max();
+  }
+
   source_node->cost = 0;
   handles[source_node] = open.push(source_node);
 
@@ -142,7 +151,6 @@ void SSSP::dijkstra(Roadmap roadmap, const shared_ptr<LLNode> source_node) {
         const double new_cost = curr_node->cost + calculateDistance(curr_node->point, adjacent_node->point);
         if (new_cost < adjacent_node->cost) {
           adjacent_node->cost = new_cost;
-          adjacent_node->parent = curr_node;
 
           // Decrease key if the node is already in the heap, otherwise insert it
           if (handles.find(adjacent_node) != handles.end()) {
