@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.patches import Circle
 
-sample = 100
+sample = 10
 
 # 파일에서 데이터 읽기
 file_path = 'solution.txt'
@@ -140,6 +140,6 @@ for circle in circles.values():
 # for obstacle in obstacles:
 #     ax.add_patch(obstacle)
 
-ani = animation.FuncAnimation(fig, animate, frames=int(total_time * sample), init_func=init, blit=True, interval=1)
+ani = animation.FuncAnimation(fig, animate, frames=int(total_time * sample), init_func=init, blit=True, interval=10)
 
 plt.show()

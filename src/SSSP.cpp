@@ -10,7 +10,7 @@ Solution SSSP::run() {
   Solution solution;
   initRoadmaps();
   while (true) {
-    auto open = priority_queue<shared_ptr<HLNode>, vector<shared_ptr<HLNode>>, HLNodeComparator>();
+    auto open = boost::heap::fibonacci_heap<shared_ptr<HLNode>, boost::heap::compare<HLNodeComparator>>();
     auto explored = unordered_set<shared_ptr<HLNode>>();
     // update cost of all nodes
     for (int i = 0; i < env.num_of_robots; ++i) {
@@ -34,15 +34,9 @@ Solution SSSP::run() {
       open.pop();
 
       cout << "Cost: " << curr_hl_node->cost << endl;
+      cout << "Next: " << curr_hl_node->next << endl;
 
-      // check goal
-      vector<Point> configurations;
-      for (int i = 0; i < env.num_of_robots; ++i) {
-        configurations.emplace_back(curr_hl_node->nodes[i]->point);
-        cout << "Agent " << i << ": (" << get<0>(curr_hl_node->nodes[i]->point) << ", "
-             << get<1>(curr_hl_node->nodes[i]->point) << ")" << endl;
-      }
-      if (configurations == env.goal_points) {
+      if (curr_hl_node->cost <= env.epsilon) {
         cout << "SSSP: Found solution" << endl;
         solution = updatePath(curr_hl_node);
         return solution;
@@ -79,8 +73,8 @@ Solution SSSP::run() {
           }
           if (!new_node->adjacent_nodes.empty()) {
             roadmaps[agent_id].emplace_back(new_node);
-            cout << "Add node (" << get<0>(new_node->point) << ", " << get<1>(new_node->point) << ") to roadmap "
-                 << agent_id << endl;
+            // cout << "Add node (" << get<0>(new_node->point) << ", " << get<1>(new_node->point) << ") to roadmap "
+            //      << agent_id << endl;
           }
         }
       }
@@ -102,10 +96,13 @@ Solution SSSP::run() {
 
         auto new_hl_node = make_shared<HLNode>(new_nodes, next_agent_id, new_cost);
         if (explored.find(new_hl_node) == explored.end()) {
-          if (agentConstrained(agent_id, from_node->point, adjacent_node->point, curr_hl_node->nodes,
-                               env.radii[agent_id])) {
+          if (agentConstrained(agent_id, from_node->point, adjacent_node->point, new_nodes, env.radii[agent_id])) {
             continue;
           }
+          // cout << "Add HL node (" << get<0>(adjacent_node->point) << ", " << get<1>(adjacent_node->point) << ") for agent "
+          //      << agent_id << " with cost " << new_cost << endl;
+          // cout << "Cost change: " << curr_hl_node->nodes[agent_id]->cost << " -> " << adjacent_node->cost << ": "
+          //      << adjacent_node->cost - curr_hl_node->nodes[agent_id]->cost << endl;
           new_hl_node->parent = curr_hl_node;
           open.push(new_hl_node);
           explored.insert(new_hl_node);
@@ -113,6 +110,22 @@ Solution SSSP::run() {
         else {
           cout << "Already explored" << endl;
         }
+      }
+      // add self loop
+      auto new_nodes = curr_hl_node->nodes;
+      new_nodes[agent_id] = from_node;
+      auto new_hl_node = make_shared<HLNode>(new_nodes, next_agent_id, curr_hl_node->cost);
+      if (explored.find(new_hl_node) == explored.end()) {
+        // cout << "Add HL node (" << get<0>(from_node->point) << ", " << get<1>(from_node->point) << ") for agent "
+        //      << agent_id << " with cost " << curr_hl_node->cost << endl;
+        // cout << "Cost change: " << curr_hl_node->nodes[agent_id]->cost << " -> " << from_node->cost << ": "
+        //      << from_node->cost - curr_hl_node->nodes[agent_id]->cost << endl;
+        new_hl_node->parent = curr_hl_node;
+        open.push(new_hl_node);
+        explored.insert(new_hl_node);
+      }
+      else {
+        cout << "Already explored" << endl;
       }
     }
     threshold = threshold * decay_rate;
@@ -198,5 +211,8 @@ Solution SSSP::updatePath(const shared_ptr<HLNode>& goal_node) const {
     node = node->parent.lock();
     timestep += 1.0;
   }
+  // for (int i = 0; i < env.num_of_robots; ++i) {
+  //   reverse(solution[i].begin(), solution[i].end());
+  // }
   return solution;
 }
