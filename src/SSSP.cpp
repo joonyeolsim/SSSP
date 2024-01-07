@@ -33,6 +33,8 @@ Solution SSSP::run() {
       const auto curr_hl_node = open.top();
       open.pop();
 
+      cout << "Cost: " << curr_hl_node->cost << endl;
+
       // check goal
       vector<Point> configurations;
       for (int i = 0; i < env.num_of_robots; ++i) {
@@ -68,15 +70,17 @@ Solution SSSP::run() {
         }
         if (min_distance > threshold) {
           // add q_new to roadmap
-          roadmaps[agent_id].emplace_back(new_node);
-          cout << "Add node (" << get<0>(new_node->point) << ", " << get<1>(new_node->point) << ") to roadmap "
-               << agent_id << endl;
           for (const auto& node : roadmaps[agent_id]) {
             if (!roadmap_constructors[agent_id].obstacleConstrained(node->point, new_node->point,
                                                                     env.radii[agent_id])) {
               new_node->adjacent_nodes.emplace_back(node);
               node->adjacent_nodes.emplace_back(new_node);
             }
+          }
+          if (!new_node->adjacent_nodes.empty()) {
+            roadmaps[agent_id].emplace_back(new_node);
+            cout << "Add node (" << get<0>(new_node->point) << ", " << get<1>(new_node->point) << ") to roadmap "
+                 << agent_id << endl;
           }
         }
       }
@@ -93,7 +97,7 @@ Solution SSSP::run() {
 
         double new_cost = 0;
         for (int i = 0; i < env.num_of_robots; ++i) {
-          new_cost += adjacent_node->cost;
+          new_cost += new_nodes[i]->cost;
         }
 
         auto new_hl_node = make_shared<HLNode>(new_nodes, next_agent_id, new_cost);
@@ -105,6 +109,9 @@ Solution SSSP::run() {
           new_hl_node->parent = curr_hl_node;
           open.push(new_hl_node);
           explored.insert(new_hl_node);
+        }
+        else {
+          cout << "Already explored" << endl;
         }
       }
     }

@@ -20,7 +20,9 @@ class LLNode {
         bool operator<(const LLNode& other) const { return cost < other.cost; }
 
   // operator for unordered_set
-        bool operator==(const LLNode& other) const { return point == other.point; }
+        bool operator==(const LLNode& other) const {
+    return point == other.point;
+  }
 };
 
 #endif  // LLNODE_H
