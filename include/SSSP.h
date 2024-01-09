@@ -9,6 +9,8 @@ public:
   double random_sampling_rate = 0;
   double threshold = 1;
   double decay_rate = 0.99;
+  double makespan = 0;
+  double sum_of_costs = 0;
   vector<RRT> roadmap_constructors;
   SharedEnv& env;
   typedef vector<shared_ptr<LLNode>> Roadmap;

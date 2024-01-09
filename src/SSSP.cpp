@@ -54,6 +54,9 @@ Solution SSSP::run() {
         if (dis_100(gen) > random_sampling_rate) {
           // steering
           new_node = roadmap_constructors[agent_id].steer(from_node->point, new_point);
+          if (new_node == nullptr) {
+            continue;
+          }
         }
         // find minimum distance from q_new to nodes in roadmap
         auto min_distance = numeric_limits<double>::max();

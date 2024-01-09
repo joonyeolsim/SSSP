@@ -20,17 +20,26 @@ int main(int argc, char* argv[]) {
     }
   }
 
-  string benchmarkPath = "benchmark/" + mapname + "_" + obs + "/" + mapname + "_" + obs + "_" + testnum + ".yaml";
-  string solutionPath = "solution/" + mapname + "_" + obs + "/" + mapname + "_" + obs + "_" + testnum + ".txt";
-  string dataPath = "data/" + mapname + "_" + obs + "/" + mapname + "_" + obs + "_" + testnum + ".txt";
+  string benchmarkPath = "benchmark/" + mapname + "_" + obs + "/agents" + robotnum + "/" + mapname + "_" + obs + "_" +
+                         robotnum + "_" + testnum + ".yaml";
+  string solutionPath = "solution/" + mapname + "_" + obs + "/agents" + robotnum + "/" + mapname + "_" + obs + "_" +
+                        robotnum + "_" + testnum + "_solution.txt";
+  string dataPath = "data/" + mapname + "_" + obs + "/agents" + robotnum + "/" + mapname + "_" + obs + "_" + robotnum +
+                    "_" + testnum + "_data.txt";
   YAML::Node config = YAML::LoadFile(benchmarkPath);
 
   vector<shared_ptr<Obstacle>> obstacles;
   for (size_t i = 0; i < config["obstacles"].size(); ++i) {
-    auto center = config["obstacles"][i]["center"].as<std::vector<double>>();
-    auto height = config["obstacles"][i]["height"].as<double>();
-    auto width = config["obstacles"][i]["width"].as<double>();
-    obstacles.emplace_back(make_shared<RectangularObstacle>(center[0], center[1], width, height));
+    if (mapname == "CircleEnv") {
+      auto center = config["obstacles"][i]["center"].as<std::vector<double>>();
+      auto radius = config["obstacles"][i]["radius"].as<double>();
+      obstacles.emplace_back(make_shared<CircularObstacle>(center[0], center[1], radius));
+    } else {
+      auto center = config["obstacles"][i]["center"].as<std::vector<double>>();
+      auto height = config["obstacles"][i]["height"].as<double>();
+      auto width = config["obstacles"][i]["width"].as<double>();
+      obstacles.emplace_back(make_shared<RectangularObstacle>(center[0], center[1], width, height));
+    }
   }
   vector<Point> start_points;
   vector<Point> goal_points;
@@ -71,11 +80,11 @@ int main(int argc, char* argv[]) {
   auto stop = std::chrono::high_resolution_clock::now();
   chrono::duration<double, std::ratio<1>> duration = stop - start;
 
-  // cout << "sum of cost: " << sssp.sum_of_costs << endl;
-  // cout << "makespan: " << sssp.makespan << endl;
-  // cout << "computation time: " << duration.count() << endl;
-  // saveSolution(soluiton, solutionPath);
-  // saveData(sssp.sum_of_costs, sssp.makespan, duration.count(), dataPath);
+  cout << "sum of cost: " << sssp.sum_of_costs << endl;
+  cout << "makespan: " << sssp.makespan << endl;
+  cout << "computation time: " << duration.count() << endl;
+  saveSolution(soluiton, solutionPath);
+  saveData(sssp.sum_of_costs, sssp.makespan, duration.count(), dataPath);
 
   return 0;
 }
