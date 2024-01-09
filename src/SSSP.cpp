@@ -113,21 +113,21 @@ Solution SSSP::run() {
         }
       }
       // add self loop
-      auto new_nodes = curr_hl_node->nodes;
-      new_nodes[agent_id] = from_node;
-      auto new_hl_node = make_shared<HLNode>(new_nodes, next_agent_id, curr_hl_node->cost);
-      if (explored.find(new_hl_node) == explored.end()) {
-        // cout << "Add HL node (" << get<0>(from_node->point) << ", " << get<1>(from_node->point) << ") for agent "
-        //      << agent_id << " with cost " << curr_hl_node->cost << endl;
-        // cout << "Cost change: " << curr_hl_node->nodes[agent_id]->cost << " -> " << from_node->cost << ": "
-        //      << from_node->cost - curr_hl_node->nodes[agent_id]->cost << endl;
-        new_hl_node->parent = curr_hl_node;
-        open.push(new_hl_node);
-        explored.insert(new_hl_node);
-      }
-      else {
-        cout << "Already explored" << endl;
-      }
+      // auto new_nodes = curr_hl_node->nodes;
+      // new_nodes[agent_id] = from_node;
+      // auto new_hl_node = make_shared<HLNode>(new_nodes, next_agent_id, curr_hl_node->cost);
+      // if (explored.find(new_hl_node) == explored.end()) {
+      //   // cout << "Add HL node (" << get<0>(from_node->point) << ", " << get<1>(from_node->point) << ") for agent "
+      //   //      << agent_id << " with cost " << curr_hl_node->cost << endl;
+      //   // cout << "Cost change: " << curr_hl_node->nodes[agent_id]->cost << " -> " << from_node->cost << ": "
+      //   //      << from_node->cost - curr_hl_node->nodes[agent_id]->cost << endl;
+      //   new_hl_node->parent = curr_hl_node;
+      //   open.push(new_hl_node);
+      //   explored.insert(new_hl_node);
+      // }
+      // else {
+      //   cout << "Already explored" << endl;
+      // }
     }
     threshold = threshold * decay_rate;
   }
