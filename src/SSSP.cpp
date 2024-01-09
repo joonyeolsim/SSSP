@@ -12,6 +12,7 @@ Solution SSSP::run() {
   while (true) {
     auto open = boost::heap::fibonacci_heap<shared_ptr<HLNode>, boost::heap::compare<HLNodeComparator>>();
     auto explored = unordered_set<shared_ptr<HLNode>>();
+    vector<shared_ptr<HLNode>> all_nodes;
     // update cost of all nodes
     for (int i = 0; i < env.num_of_robots; ++i) {
       dijkstra(roadmaps[i], roadmap_constructors[i].goal_node);
@@ -100,13 +101,14 @@ Solution SSSP::run() {
           if (agentConstrained(agent_id, from_node->point, adjacent_node->point, new_nodes, env.radii[agent_id])) {
             continue;
           }
-          // cout << "Add HL node (" << get<0>(adjacent_node->point) << ", " << get<1>(adjacent_node->point) << ") for agent "
-          //      << agent_id << " with cost " << new_cost << endl;
-          // cout << "Cost change: " << curr_hl_node->nodes[agent_id]->cost << " -> " << adjacent_node->cost << ": "
-          //      << adjacent_node->cost - curr_hl_node->nodes[agent_id]->cost << endl;
+          cout << "Add HL node (" << get<0>(adjacent_node->point) << ", " << get<1>(adjacent_node->point) << ") for agent "
+               << agent_id << " with cost " << new_cost << endl;
+          cout << "Cost change: " << curr_hl_node->nodes[agent_id]->cost << " -> " << adjacent_node->cost << ": "
+               << adjacent_node->cost - curr_hl_node->nodes[agent_id]->cost << endl;
           new_hl_node->parent = curr_hl_node;
           open.push(new_hl_node);
           explored.insert(new_hl_node);
+          all_nodes.emplace_back(new_hl_node);
         }
         else {
           cout << "Already explored" << endl;

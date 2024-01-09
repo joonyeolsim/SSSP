@@ -6,7 +6,7 @@
 class SSSP {
 public:
   int num_of_sampling = 3;
-  double random_sampling_rate = 1;
+  double random_sampling_rate = 0;
   double threshold = 1;
   double decay_rate = 0.99;
   vector<RRT> roadmap_constructors;
