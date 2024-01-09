@@ -68,6 +68,7 @@ Solution SSSP::run() {
             if (!roadmap_constructors[agent_id].obstacleConstrained(node->point, new_node->point,
                                                                     env.radii[agent_id])) {
               new_node->adjacent_nodes.emplace_back(node);
+              new_node->adjacent_nodes.emplace_back(new_node);
               node->adjacent_nodes.emplace_back(new_node);
             }
           }

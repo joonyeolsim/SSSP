@@ -2,6 +2,7 @@
 
 Path RRT::run() {
   start_node = make_shared<LLNode>(start_point);
+  start_node->adjacent_nodes.emplace_back(start_node);
   nodes.emplace_back(start_node);
   int iteration = env.iterations[agent_id];
   while (iteration--) {
@@ -11,6 +12,7 @@ Path RRT::run() {
     if (new_node) {
       new_node->parent = nearest_node;
       new_node->adjacent_nodes.emplace_back(nearest_node);
+      new_node->adjacent_nodes.emplace_back(new_node);
       nearest_node->adjacent_nodes.emplace_back(new_node);
       nodes.emplace_back(new_node);
       if (calculateDistance(new_node->point, goal_point) < env.epsilon) {
