@@ -34,11 +34,11 @@ Solution SSSP::run() {
       const auto curr_hl_node = open.top();
       open.pop();
 
-      cout << "Cost: " << curr_hl_node->cost << endl;
-      cout << "Next: " << curr_hl_node->next << endl;
+      // cout << "Cost: " << curr_hl_node->cost << endl;
+      // cout << "Next: " << curr_hl_node->next << endl;
 
       if (curr_hl_node->cost <= env.epsilon) {
-        cout << "SSSP: Found solution" << endl;
+        // cout << "SSSP: Found solution" << endl;
         solution = updatePath(curr_hl_node);
         return solution;
       }
@@ -46,7 +46,7 @@ Solution SSSP::run() {
       // vertex expansion
       const auto agent_id = curr_hl_node->next;
       const auto from_node = curr_hl_node->nodes[agent_id];
-      cout << "Vertex expansion: " << agent_id << endl;
+      // cout << "Vertex expansion: " << agent_id << endl;
 
       for (int i = 0; i < num_of_sampling; i++) {
         auto new_point = roadmap_constructors[agent_id].generateRandomPoint();
@@ -88,7 +88,7 @@ Solution SSSP::run() {
       dijkstra(roadmaps[agent_id], roadmap_constructors[agent_id].goal_node);
 
       // node expansion
-      cout << "Node expansion: " << agent_id << endl;
+      // cout << "Node expansion: " << agent_id << endl;
       const auto next_agent_id = (agent_id + 1) % env.num_of_robots;
       for (const auto& adjacent_node : from_node->adjacent_nodes) {
         auto new_nodes = curr_hl_node->nodes;
@@ -104,17 +104,17 @@ Solution SSSP::run() {
           if (agentConstrained(agent_id, from_node->point, adjacent_node->point, new_nodes, env.radii[agent_id])) {
             continue;
           }
-          cout << "Add HL node (" << get<0>(adjacent_node->point) << ", " << get<1>(adjacent_node->point) << ") for agent "
-               << agent_id << " with cost " << new_cost << endl;
-          cout << "Cost change: " << curr_hl_node->nodes[agent_id]->cost << " -> " << adjacent_node->cost << ": "
-               << adjacent_node->cost - curr_hl_node->nodes[agent_id]->cost << endl;
+          // cout << "Add HL node (" << get<0>(adjacent_node->point) << ", " << get<1>(adjacent_node->point) << ") for agent "
+          //      << agent_id << " with cost " << new_cost << endl;
+          // cout << "Cost change: " << curr_hl_node->nodes[agent_id]->cost << " -> " << adjacent_node->cost << ": "
+          //      << adjacent_node->cost - curr_hl_node->nodes[agent_id]->cost << endl;
           new_hl_node->parent = curr_hl_node;
           open.push(new_hl_node);
           explored.insert(new_hl_node);
           all_nodes.emplace_back(new_hl_node);
         }
         else {
-          cout << "Already explored" << endl;
+          // cout << "Already explored" << endl;
         }
       }
       // add self loop

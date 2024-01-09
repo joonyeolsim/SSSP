@@ -80,9 +80,9 @@ int main(int argc, char* argv[]) {
   auto stop = std::chrono::high_resolution_clock::now();
   chrono::duration<double, std::ratio<1>> duration = stop - start;
 
-  cout << "sum of cost: " << sssp.sum_of_costs << endl;
-  cout << "makespan: " << sssp.makespan << endl;
-  cout << "computation time: " << duration.count() << endl;
+  // cout << "sum of cost: " << sssp.sum_of_costs << endl;
+  // cout << "makespan: " << sssp.makespan << endl;
+  // cout << "computation time: " << duration.count() << endl;
   saveSolution(soluiton, solutionPath);
   saveData(sssp.sum_of_costs, sssp.makespan, duration.count(), dataPath);
 

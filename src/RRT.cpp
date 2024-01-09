@@ -21,7 +21,7 @@ Path RRT::run() {
       }
     }
   }
-  cout << "RRT: No path found" << endl;
+  // cout << "RRT: No path found" << endl;
   return {};
 }
 
